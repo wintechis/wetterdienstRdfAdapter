@@ -7,7 +7,7 @@
  */
 export interface RequestParams {
   provider: string;
-  network: string; 
+  network: string;
   parameters: string;
   periods?: string;
 }

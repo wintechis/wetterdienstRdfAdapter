@@ -40,6 +40,7 @@ const values = await wetterdienstClient.getValues({
 const rdfData = await valuesToRDF(values);
 console.log(rdfData);
 ```
+
 The above code outputs the following RDF data:
 
 ```Turtle

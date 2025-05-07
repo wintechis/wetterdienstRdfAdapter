@@ -12,7 +12,7 @@ const mockStation = {
   longitude: 13.4050,
   height: 100,
   name: "Berlin Mitte",
-  state: "Berlin"
+  state: "Berlin",
 };
 
 const mockValue = {
@@ -22,7 +22,7 @@ const mockValue = {
   parameter: "temperature_air_mean_2m",
   date: "2024-01-01T12:00:00",
   value: 21.5,
-  quality: 1
+  quality: 1,
 };
 
 const mockResponse = {
@@ -32,26 +32,26 @@ const mockResponse = {
       name_english: "Test Provider",
       country: "DE",
       copyright: "Test Copyright",
-      url: "https://example.com"
+      url: "https://example.com",
     },
     producer: {
       name: "Test Producer",
       version: "1.0.0",
       repository: "https://github.com/test/repo",
       documentation: "https://docs.example.com",
-      doi: "10.1234/test"
-    }
+      doi: "10.1234/test",
+    },
   },
   stations: [mockStation],
-  values: [mockValue]
+  values: [mockValue],
 };
 
 Deno.test("RDF conversion - should convert weather values to RDF", async () => {
   const rdf = await valuesToRDF(mockResponse);
-  
+
   assertExists(rdf);
   assertEquals(typeof rdf, "string");
-  
+
   // Test that the RDF contains expected triples
   const expectedStrings = [
     `<https://wetterdienst.eobs.org/station/01234>`,
@@ -59,7 +59,7 @@ Deno.test("RDF conversion - should convert weather values to RDF", async () => {
     `"21.5"^^xsd:float`,
     `qudt_unit:DegreeCelsius`,
   ];
-  
+
   for (const expected of expectedStrings) {
     assert(rdf.includes(expected), `RDF should contain ${expected}`);
   }

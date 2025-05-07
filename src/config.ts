@@ -1,6 +1,6 @@
 export const API_CONFIG = {
-  BASE_URL: 'https://wetterdienst.eobs.org/api/',
-  RESOURCE_BASE: 'https://wetterdienst.eobs.org/'
+  BASE_URL: "https://wetterdienst.eobs.org/api/",
+  RESOURCE_BASE: "https://wetterdienst.eobs.org/",
 };
 
 export const RDF_NAMESPACES = {
@@ -13,5 +13,5 @@ export const RDF_NAMESPACES = {
   XSD_NAMESPACE: "http://www.w3.org/2001/XMLSchema#",
   GEO_NAMESPACE: "http://www.w3.org/2003/01/geo/wgs84_pos#",
   QUDT_NAMESPACE: "http://qudt.org/1.1/schema/qudt#",
-  QUDT_UNIT_NAMESPACE: "http://qudt.org/1.1/vocab/unit#"
+  QUDT_UNIT_NAMESPACE: "http://qudt.org/1.1/vocab/unit#",
 };
