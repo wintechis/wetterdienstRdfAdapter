@@ -16,17 +16,26 @@ const {
 /**
  * Converts stations response to RDF format
  * @param response The stations response from the API
+ * @param contentType Optional content type for output format
  * @returns Promise containing RDF data as string
  */
-export function stationsToRDF(response: StationsResponse): Promise<string> {
-  const writer = new Writer({ prefixes: { 
-    dwd: DWD_NAMESPACE,
-    sosa: SOSA_NAMESPACE,
-    rdf: RDF_NAMESPACE,
-    rdfs: RDFS_NAMESPACE,
-    xsd: XSD_NAMESPACE,
-    wgs: GEO_NAMESPACE,
-  }});
+export function stationsToRDF(
+  response: StationsResponse, 
+  contentType?: string
+): Promise<string> {
+  // Map content type to N3 format
+  const format = mapContentTypeToFormat(contentType);
+  const writer = new Writer({ 
+    prefixes: { 
+      dwd: DWD_NAMESPACE,
+      sosa: SOSA_NAMESPACE,
+      rdf: RDF_NAMESPACE,
+      rdfs: RDFS_NAMESPACE,
+      xsd: XSD_NAMESPACE,
+      wgs: GEO_NAMESPACE,
+    },
+    format: format
+  });
   
   // Add station data to writer
   response.stations.forEach(station => {
@@ -110,9 +119,39 @@ export function stationsToRDF(response: StationsResponse): Promise<string> {
   
   // Return serialized RDF
   return new Promise<string>((resolve, reject) => {
-    writer.end((error, result) => {
+    writer.end((error: Error | null, result: string | PromiseLike<string>) => {
       if (error) reject(error);
       else resolve(result);
     });
   });
+}
+
+/**
+ * Maps HTTP content type to N3 writer format
+ * @param contentType HTTP content type
+ * @returns N3 format string
+ */
+function mapContentTypeToFormat(contentType?: string): string | undefined {
+  if (!contentType) return undefined; // Default to Turtle
+  
+  // Convert to lowercase for case-insensitive comparison
+  const type = contentType.toLowerCase();
+  
+  switch (true) {
+    case type.includes('application/n-triples'):
+      return 'N-Triples';
+    case type.includes('application/n-quads'):
+      return 'N-Quads';
+    case type.includes('application/trig'):
+      return 'TriG';
+    case type.includes('text/n3'):
+      return 'N3';
+    case type.includes('application/rdf+xml'):
+      return 'RDF/XML'; // Note: N3.js might not directly support this
+    case type.includes('application/json'):
+    case type.includes('application/ld+json'):
+      return 'application/ld+json'; // JSON-LD format
+    default:
+      return 'Turtle'; // Default to Turtle for text/turtle and other types
+  }
 }

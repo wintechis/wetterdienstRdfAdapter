@@ -17,7 +17,7 @@ app.use(async (ctx, next) => {
 app.use(async (ctx, next) => {
   ctx.response.headers.set("Access-Control-Allow-Origin", "*");
   ctx.response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Accept");
   
   if (ctx.request.method === "OPTIONS") {
     ctx.response.status = 204; // No content
@@ -26,6 +26,84 @@ app.use(async (ctx, next) => {
   
   await next();
 });
+
+/**
+ * Determines response format based on Accept header priority
+ * @param ctx The context containing request headers
+ * @returns Format type and content type
+ */
+function determineResponseFormat(ctx: any): { 
+  format: "json" | "rdf",
+  contentType: string 
+} {
+  const acceptHeader = ctx.request.headers.get("Accept") || "";
+  
+  // If no Accept header, default to JSON
+  if (!acceptHeader) {
+    return { format: "json", contentType: "application/json" };
+  }
+  
+  // Parse and sort media types by quality parameter
+  const mediaTypes = parseAcceptHeader(acceptHeader);
+  
+  // RDF media types that N3 library supports
+  const rdfMediaTypes = [
+    "text/turtle",
+    "application/n-triples",
+    "application/n-quads",
+    "application/trig",
+    "text/n3",
+    "application/ld+json"
+  ];
+  
+  // Check each media type in priority order
+  for (const mediaType of mediaTypes) {
+    // Check for JSON first
+    if (mediaType === "application/json") {
+      return { format: "json", contentType: "application/json" };
+    }
+    
+    // Then check for supported RDF formats
+    if (rdfMediaTypes.includes(mediaType)) {
+      return { format: "rdf", contentType: mediaType };
+    }
+    
+    // Special case for any JSON type or any type
+    if (mediaType.endsWith("+json")) {
+      return { format: "json", contentType: "application/json" };
+    }
+  }
+  
+  // Default to turtle if nothing else matches
+  return { format: "rdf", contentType: "text/turtle" };
+}
+
+/**
+ * Parses Accept header and returns media types sorted by quality value
+ * @param acceptHeader The raw Accept header string
+ * @returns Array of media types sorted by priority
+ */
+function parseAcceptHeader(acceptHeader: string): string[] {
+  // Split by comma and parse each media type with its quality value
+  const mediaTypeEntries = acceptHeader.split(',')
+    .map(entry => {
+      const [mediaType, ...params] = entry.trim().split(';');
+      // Extract quality value if present, default to 1.0
+      const qParam = params.find(p => p.trim().startsWith('q='));
+      const quality = qParam 
+        ? parseFloat(qParam.split('=')[1]) 
+        : 1.0;
+      
+      return { mediaType: mediaType.trim(), quality };
+    })
+    .filter(entry => !isNaN(entry.quality) && entry.quality > 0);
+  
+  // Sort by quality value (highest first)
+  mediaTypeEntries.sort((a, b) => b.quality - a.quality);
+  
+  // Return just the media types, in priority order
+  return mediaTypeEntries.map(entry => entry.mediaType);
+}
 
 /**
  * GET /stations endpoint
@@ -46,7 +124,7 @@ router.get("/stations", async (ctx) => {
     const network = url.searchParams.get("network") || "observation";
     const parameters = url.searchParams.get("parameters");
     const periods = url.searchParams.get("periods") || "recent";
-    const format = url.searchParams.get("format") || "json";
+    const { format, contentType } = determineResponseFormat(ctx);
     
     // Check required parameters
     if (!parameters) {
@@ -89,13 +167,23 @@ router.get("/stations", async (ctx) => {
     
     // Return response in requested format
     if (format === "rdf") {
-      const rdf = await stationsToRDF(stations);
-      ctx.response.headers.set("Content-Type", "text/turtle");
-      ctx.response.body = rdf;
-    } else {
-      ctx.response.headers.set("Content-Type", "application/json");
-      ctx.response.body = stations;
-    }
+        const rdf = await stationsToRDF(stations, contentType);
+        
+        // Set the specific content type that was used
+        ctx.response.headers.set("Content-Type", 
+          contentType.includes(',') 
+            ? contentType.split(',')[0].trim() // Use first content type if multiple
+            : contentType
+        );
+        
+        ctx.response.body = rdf;
+      } else {
+        ctx.response.headers.set("Content-Type", "application/json");
+        ctx.response.body = stations;
+      }
+    
+      // Add Vary header to indicate response depends on Accept header
+      ctx.response.headers.set("Vary", "Accept");
   } catch (error) {
     console.error("Error handling /stations request:", error);
     ctx.response.status = 500;
@@ -123,7 +211,7 @@ router.get("/values", async (ctx) => {
     const periods = url.searchParams.get("periods") || "recent";
     const station = url.searchParams.get("station");
     const date = url.searchParams.get("date") || undefined;
-    const format = url.searchParams.get("format") || "json";
+    const { format, contentType } = determineResponseFormat(ctx);
     
     // Check required parameters
     if (!parameters) {
@@ -150,13 +238,23 @@ router.get("/values", async (ctx) => {
     
     // Return response in requested format
     if (format === "rdf") {
-      const rdf = await valuesToRDF(values);
-      ctx.response.headers.set("Content-Type", "text/turtle");
-      ctx.response.body = rdf;
+        const rdf = await valuesToRDF(values, contentType);
+        
+        // Set the specific content type that was used
+        ctx.response.headers.set("Content-Type", 
+          contentType.includes(',') 
+            ? contentType.split(',')[0].trim() 
+            : contentType
+        );
+        
+        ctx.response.body = rdf;
     } else {
       ctx.response.headers.set("Content-Type", "application/json");
       ctx.response.body = values;
     }
+    
+    // Add Vary header to indicate response depends on Accept header
+    ctx.response.headers.set("Vary", "Accept");
   } catch (error) {
     console.error("Error handling /values request:", error);
     ctx.response.status = 500;
@@ -170,7 +268,7 @@ router.get("/", (ctx) => {
     status: "ok",
     service: "Wetterdienst RDF Adapter",
     endpoints: ["/stations", "/values"],
-    version: "1.0.0"
+    version: "0.0.1"
   };
 });
 

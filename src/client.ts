@@ -35,8 +35,6 @@ export class WetterdienstClient {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
         
-        console.log(`Fetching (attempt ${attempt}): ${url.toString()}`);
-        
         const response = await fetch(url.toString(), { 
           signal: controller.signal 
         });
