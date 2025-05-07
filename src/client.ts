@@ -38,6 +38,7 @@ export class WetterdienstClient {
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
+        console.log(`Fetching data from ${url} (Attempt ${attempt})`);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
