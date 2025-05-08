@@ -1,4 +1,4 @@
-import {
+import type {
   RequestParams,
   StationFilterParams,
   StationsResponse,
@@ -147,4 +147,4 @@ export class WetterdienstClient {
 }
 
 // Export singleton instance
-export const wetterdienstClient = new WetterdienstClient();
+export const wetterdienstClient: WetterdienstClient = new WetterdienstClient();

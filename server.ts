@@ -1,4 +1,4 @@
-import { Application, Context, Router } from "https://deno.land/x/oak/mod.ts";
+import { Application, type Context, Router } from "https://deno.land/x/oak/mod.ts";
 import { stationsToRDF, valuesToRDF, wetterdienstClient } from "./mod.ts";
 import { parseAcceptHeader } from "src/format-utils.ts";
 

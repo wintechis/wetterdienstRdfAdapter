@@ -1,4 +1,4 @@
-import { Station, Value, ValuesResponse } from "./types.ts";
+import type { Station, Value, ValuesResponse } from "./types.ts";
 import { DataFactory, Writer } from "n3";
 import { RDF_NAMESPACES } from "./config.ts";
 import { mapContentTypeToFormat } from "./format-utils.ts";
