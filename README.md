@@ -2,13 +2,6 @@
 
 This library provides a Deno-based interface to the Wetterdienst API with RDF conversion capabilities.
 
-## Features
-
-- Type-safe client for the Wetterdienst API
-- Convert weather data to RDF format
-- Support for standard weather parameters and units
-- Configurable retry logic for API requests
-
 ## Usage
 
 This library is can be used with Deno or via its REST API.
