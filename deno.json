@@ -1,4 +1,8 @@
 {
+  "name": "@wintechis/wetterdienst-rdf-adapter",
+  "version": "0.0.1",
+  "description": "A Deno application to convert wetterdienst responses to RDF format.",
+  "exports": "./mod.ts",
   "tasks": {
     "dev": "deno run --allow-net --allow-env --watch server.ts",
     "start": "deno run --allow-net --allow-env server.ts",
