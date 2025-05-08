@@ -25,7 +25,12 @@ foo@bar:~$ curl -X GET -H "Accept: text/turtle" \
 
 ### Using the Library
 
-To use the library in your own Deno project first add it via `deno add jsr:@wintechis/wetterdienst-rdf-adapter`.
+To use the library in your own Deno project first add it via 
+ - deno: `deno add jsr:@wintechis/wetterdienst-rdf-adapter`
+ - npm: `npx jsr add @wintechis/wetterdienst-rdf-adapter`
+ - yarn: `yarn add jsr:@wintechis/wetterdienst-rdf-adapter`
+ - pnpm: `pnpm i jsr:@wintechis/wetterdienst-rdf-adapter`
+ - bun: `bunx jsr add @wintechis/wetterdienst-rdf-adapter`
 
 Then you can use the library as follows:
 
