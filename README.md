@@ -17,7 +17,7 @@ The REST API is available at `https://wetterdienst-rdf-adapter.deno.dev`.
 For example to get a list of stations providing annual measurements of annual sunshine duration near given coordinates `[49.019533,12.097487]`, you can GET the following URL:
 ```console
 foo@bar:~$ curl -X GET -H "Accept: text/turtle" \
-"https://wetterdienst-rdf-adapter.deno.dev/stations?provider=dwd&network=observation&parameters=annual%2Fclimate_summary%2Fsunshine_duration&periods=recent&coordinates=49.019533%2C12.097487&rank=5"
+"https://wetterdienst-rdf-adapter.deno.dev/stations?provider=dwd&network=observation&parameters=annual%2Fclimate_summary%2Fsunshine_duration&periods=recent&coordinates=49.019533%2C12.097487&rank=1"
 ```
 
 To query the values for annual sunshine duration observed by a given station `04104` in the year 2024 you can use the following URL:
@@ -39,7 +39,7 @@ const stations = await wetterdienstClient.getStations({
   parameters: WeatherParameters.SUNSHINE_DURATION_ANNUAL,
   periods: "recent",
   coordinates: [49.019533, 12.097487],
-  rank: 5,
+  rank: 1,
 });
 
 // Get values for a specific station
