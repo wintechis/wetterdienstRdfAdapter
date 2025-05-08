@@ -1,0 +1,1545 @@
+@prefix : <https://wetterdienst-rdf-adapter.deno.dev/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix http: <http://www.w3.org/2011/http#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <http://schema.org/> .
+
+<> a owl:Ontology ;
+   dc:title "Wetterdienst RDF Adapter" ;
+   owl:versionInfo "0.0.1" ;
+   rdfs:seeAlso :root, :stations, :values .
+
+:root a hydra:Resource ;
+      http:requests :GET-root-200 ;
+      rdfs:label "API Root" ;
+      rdfs:comment "The root endpoint providing API status information." .
+
+:stations a hydra:Resource ;
+         http:requests :GET-stations-200, :GET-stations-400, :GET-stations-500 ;
+         rdfs:label "Stations" ;
+         rdfs:comment "The '/stations' endpoint for weather stations data." .
+
+:values a hydra:Resource ;
+       http:requests :GET-values-200, :GET-values-400, :GET-values-500 ;
+       rdfs:label "Values" ;
+       rdfs:comment "The '/values' endpoint for weather measurements data." .
+
+# Root endpoint
+:GET-root-200
+    rdfs:label "GET '/' resource" ;
+    http:methodName "GET" ;
+    http:absolutePath "/" ;
+    hydra:method "GET" ;
+    http:resp [ 
+        http:statusCodeNumber 200 ;
+        http:reasonPhrase "OK" ;
+        http:headers ( 
+            [ http:fieldName "Content-Type" ; http:fieldValue "application/json" ] 
+        )
+    ] .
+
+# Stations endpoint
+:GET-stations-200
+    rdfs:label "GET '/stations' resource" ;
+    http:methodName "GET" ;
+    http:absolutePath "/stations" ;
+    hydra:method "GET" ;
+    hydra:expects [
+        a hydra:IriTemplate ;
+        hydra:template "/stations{?provider,network,parameters,periods,coordinates,rank}" ;
+        hydra:mapping [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "provider" ;
+            hydra:property schema:provider ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "network" ;
+            hydra:property schema:network ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "parameters" ;
+            hydra:property schema:parameters ;
+            hydra:required "true"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "periods" ;
+            hydra:property schema:periods ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "coordinates" ;
+            hydra:property schema:coordinates ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "rank" ;
+            hydra:property schema:rank ;
+            hydra:required "false"^^xsd:boolean ;
+        ]
+    ] ;
+    http:headers (
+        [ http:fieldName "Accept" ; http:fieldValue "text/turtle, application/n-triples, application/n-quads, application/trig, text/n3, application/ld+json, application/json" ]
+    ) ;
+    http:resp [ 
+        http:statusCodeNumber 200 ;
+        http:reasonPhrase "OK" ;
+        http:headers (
+            [ http:fieldName "Content-Type" ; http:fieldValue "text/turtle, application/json" ]
+            [ http:fieldName "Vary" ; http:fieldValue "Accept" ]
+        )
+    ] .
+
+:GET-stations-400
+    rdfs:label "GET '/stations' error" ;
+    http:methodName "GET" ;
+    http:absolutePath "/stations" ;
+    hydra:method "GET" ;
+    http:resp [ 
+        http:statusCodeNumber 400 ;
+        http:reasonPhrase "Bad Request" ;
+        http:headers ( [ http:fieldName "Content-Type" ; http:fieldValue "application/json" ] )
+    ] .
+
+:GET-stations-500
+    rdfs:label "GET '/stations' server error" ;
+    http:methodName "GET" ;
+    http:absolutePath "/stations" ;
+    hydra:method "GET" ;
+    http:resp [ 
+        http:statusCodeNumber 500 ;
+        http:reasonPhrase "Internal Server Error" ;
+        http:headers ( [ http:fieldName "Content-Type" ; http:fieldValue "application/json" ] )
+    ] .
+
+# Values endpoint
+:GET-values-200
+    rdfs:label "GET '/values' resource" ;
+    http:methodName "GET" ;
+    http:absolutePath "/values" ;
+    hydra:method "GET" ;
+    hydra:expects [
+        a hydra:IriTemplate ;
+        hydra:template "/values{?provider,network,parameters,periods,station,date}" ;
+        hydra:mapping [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "provider" ;
+            hydra:property schema:provider ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "network" ;
+            hydra:property schema:network ;
+            hydra:required "false"^^xsd:boolean ;
+                    ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "parameters" ;
+            hydra:property schema:parameters ;
+            hydra:required "true"^^xsd:boolean ;
+            schema:valuePattern "[\\w_]+(/[\\w_]+)*" ;
+            rdfs:comment "Hierarchical parameter path with components separated by '/'";
+            schema:enumeration [
+                a skos:ConceptScheme ;
+                skos:hasTopConcept :param_1_minute, :param_5_minutes, :param_10_minutes,
+                                :param_hourly, :param_subdaily, :param_daily,
+                                :param_monthly, :param_annual ;
+            ]
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "periods" ;
+            hydra:property schema:periods ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "station" ;
+            hydra:property schema:station ;
+            hydra:required "true"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "date" ;
+            hydra:property schema:date ;
+            hydra:required "false"^^xsd:boolean ;
+        ]
+    ] ;
+    http:headers (
+        [ http:fieldName "Accept" ; http:fieldValue "text/turtle, application/n-triples, application/n-quads, application/trig, text/n3, application/ld+json, application/json" ]
+    ) ;
+    http:resp [ 
+        http:statusCodeNumber 200 ;
+        http:reasonPhrase "OK" ;
+        http:headers (
+            [ http:fieldName "Content-Type" ; http:fieldValue "text/turtle, application/json" ]
+            [ http:fieldName "Vary" ; http:fieldValue "Accept" ]
+        )
+    ] .
+
+:GET-values-400
+    rdfs:label "GET '/values' error" ;
+    http:methodName "GET" ;
+    http:absolutePath "/values" ;
+    hydra:method "GET" ;
+    http:resp [ 
+        http:statusCodeNumber 400 ;
+        http:reasonPhrase "Bad Request" ;
+        http:headers ( [ http:fieldName "Content-Type" ; http:fieldValue "application/json" ] )
+    ] .
+
+:GET-values-500
+    rdfs:label "GET '/values' server error" ;
+    http:methodName "GET" ;
+    http:absolutePath "/values" ;
+    hydra:method "GET" ;
+    http:resp [ 
+        http:statusCodeNumber 500 ;
+        http:reasonPhrase "Internal Server Error" ;
+        http:headers ( [ http:fieldName "Content-Type" ; http:fieldValue "application/json" ] )
+    ] .
+
+# Parameter time intervals - top level concepts
+:param_1_minute a skos:Concept ;
+    rdfs:label "1_minute" ;
+    skos:narrower :param_1_minute_precipitation .
+
+:param_5_minutes a skos:Concept ;
+    rdfs:label "5_minutes" ;
+    skos:narrower :param_5_minutes_precipitation .
+
+:param_10_minutes a skos:Concept ;
+    rdfs:label "10_minutes" ;
+    skos:narrower :param_10_minutes_precipitation, 
+                 :param_10_minutes_solar,
+                 :param_10_minutes_temperature_air, 
+                 :param_10_minutes_temperature_extreme,
+                 :param_10_minutes_wind,
+                 :param_10_minutes_wind_extreme .
+
+:param_hourly a skos:Concept ;
+    rdfs:label "hourly" ;
+    skos:narrower :param_hourly_cloud_type,
+                 :param_hourly_cloudiness,
+                 :param_hourly_dew_point,
+                 :param_hourly_moisture,
+                 :param_hourly_precipitation,
+                 :param_hourly_pressure,
+                 :param_hourly_solar,
+                 :param_hourly_sun,
+                 :param_hourly_temperature_air,
+                 :param_hourly_temperature_soil,
+                 :param_hourly_visibility,
+                 :param_hourly_weather_phenomena,
+                 :param_hourly_wind,
+                 :param_hourly_wind_extreme,
+                 :param_hourly_wind_synoptic,
+                 :param_hourly_urban_precipitation,
+                 :param_hourly_urban_pressure,
+                 :param_hourly_urban_sun,
+                 :param_hourly_urban_temperature_air,
+                 :param_hourly_urban_temperature_soil,
+                 :param_hourly_urban_wind .
+
+:param_subdaily a skos:Concept ;
+    rdfs:label "subdaily" ;
+    skos:narrower :param_subdaily_cloudiness,
+                 :param_subdaily_moisture,
+                 :param_subdaily_pressure,
+                 :param_subdaily_soil,
+                 :param_subdaily_temperature_air,
+                 :param_subdaily_visibility,
+                 :param_subdaily_wind,
+                 :param_subdaily_wind_extreme .
+
+:param_daily a skos:Concept ;
+    rdfs:label "daily" ;
+    skos:narrower :param_daily_climate_summary,
+                 :param_daily_precipitation_more,
+                 :param_daily_solar,
+                 :param_daily_temperature_soil,
+                 :param_daily_water_equivalent,
+                 :param_daily_weather_phenomena,
+                 :param_daily_weather_phenomena_more .
+
+:param_monthly a skos:Concept ;
+    rdfs:label "monthly" ;
+    skos:narrower :param_monthly_climate_summary,
+                 :param_monthly_precipitation_more,
+                 :param_monthly_weather_phenomena .
+
+:param_annual a skos:Concept ;
+    rdfs:label "annual" ;
+    skos:narrower :param_annual_climate_summary,
+                 :param_annual_precipitation_more,
+                 :param_annual_weather_phenomena .
+
+# 1_minute subcategories
+:param_1_minute_precipitation a skos:Concept ;
+    rdfs:label "precipitation" ;
+    skos:broader :param_1_minute ;
+    skos:narrower :param_1_minute_precipitation_height,
+                 :param_1_minute_precipitation_height_droplet,
+                 :param_1_minute_precipitation_height_rocker,
+                 :param_1_minute_precipitation_index .
+
+:param_1_minute_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_1_minute_precipitation .
+
+:param_1_minute_precipitation_height_droplet a skos:Concept ;
+    rdfs:label "precipitation_height_droplet" ;
+    skos:broader :param_1_minute_precipitation .
+
+:param_1_minute_precipitation_height_rocker a skos:Concept ;
+    rdfs:label "precipitation_height_rocker" ;
+    skos:broader :param_1_minute_precipitation .
+
+:param_1_minute_precipitation_index a skos:Concept ;
+    rdfs:label "precipitation_index" ;
+    skos:broader :param_1_minute_precipitation .
+
+# 5_minutes subcategories
+:param_5_minutes_precipitation a skos:Concept ;
+    rdfs:label "precipitation" ;
+    skos:broader :param_5_minutes ;
+    skos:narrower :param_5_minutes_precipitation_index,
+                 :param_5_minutes_precipitation_height,
+                 :param_5_minutes_precipitation_height_droplet,
+                 :param_5_minutes_precipitation_height_rocker .
+
+:param_5_minutes_precipitation_index a skos:Concept ;
+    rdfs:label "precipitation_index" ;
+    skos:broader :param_5_minutes_precipitation .
+
+:param_5_minutes_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_5_minutes_precipitation .
+
+:param_5_minutes_precipitation_height_droplet a skos:Concept ;
+    rdfs:label "precipitation_height_droplet" ;
+    skos:broader :param_5_minutes_precipitation .
+
+:param_5_minutes_precipitation_height_rocker a skos:Concept ;
+    rdfs:label "precipitation_height_rocker" ;
+    skos:broader :param_5_minutes_precipitation .
+
+# 10_minutes subcategories
+:param_10_minutes_precipitation a skos:Concept ;
+    rdfs:label "precipitation" ;
+    skos:broader :param_10_minutes ;
+    skos:narrower :param_10_minutes_precipitation_duration,
+                 :param_10_minutes_precipitation_height,
+                 :param_10_minutes_precipitation_index .
+
+:param_10_minutes_precipitation_duration a skos:Concept ;
+    rdfs:label "precipitation_duration" ;
+    skos:broader :param_10_minutes_precipitation .
+
+:param_10_minutes_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_10_minutes_precipitation .
+
+:param_10_minutes_precipitation_index a skos:Concept ;
+    rdfs:label "precipitation_index" ;
+    skos:broader :param_10_minutes_precipitation .
+
+:param_10_minutes_solar a skos:Concept ;
+    rdfs:label "solar" ;
+    skos:broader :param_10_minutes ;
+    skos:narrower :param_10_minutes_solar_radiation_sky_short_wave_diffuse,
+                 :param_10_minutes_solar_radiation_global,
+                 :param_10_minutes_solar_sunshine_duration,
+                 :param_10_minutes_solar_radiation_sky_long_wave .
+
+:param_10_minutes_solar_radiation_sky_short_wave_diffuse a skos:Concept ;
+    rdfs:label "radiation_sky_short_wave_diffuse" ;
+    skos:broader :param_10_minutes_solar .
+
+:param_10_minutes_solar_radiation_global a skos:Concept ;
+    rdfs:label "radiation_global" ;
+    skos:broader :param_10_minutes_solar .
+
+:param_10_minutes_solar_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_10_minutes_solar .
+
+:param_10_minutes_solar_radiation_sky_long_wave a skos:Concept ;
+    rdfs:label "radiation_sky_long_wave" ;
+    skos:broader :param_10_minutes_solar .
+
+:param_10_minutes_temperature_air a skos:Concept ;
+    rdfs:label "temperature_air" ;
+    skos:broader :param_10_minutes ;
+    skos:narrower :param_10_minutes_temperature_air_pressure_air_site,
+                 :param_10_minutes_temperature_air_temperature_air_mean_2m,
+                 :param_10_minutes_temperature_air_temperature_air_mean_0_05m,
+                 :param_10_minutes_temperature_air_humidity,
+                 :param_10_minutes_temperature_air_temperature_dew_point_mean_2m .
+
+:param_10_minutes_temperature_air_pressure_air_site a skos:Concept ;
+    rdfs:label "pressure_air_site" ;
+    skos:broader :param_10_minutes_temperature_air .
+
+:param_10_minutes_temperature_air_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_10_minutes_temperature_air .
+
+:param_10_minutes_temperature_air_temperature_air_mean_0_05m a skos:Concept ;
+    rdfs:label "temperature_air_mean_0_05m" ;
+    skos:broader :param_10_minutes_temperature_air .
+
+:param_10_minutes_temperature_air_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_10_minutes_temperature_air .
+
+:param_10_minutes_temperature_air_temperature_dew_point_mean_2m a skos:Concept ;
+    rdfs:label "temperature_dew_point_mean_2m" ;
+    skos:broader :param_10_minutes_temperature_air .
+
+:param_10_minutes_temperature_extreme a skos:Concept ;
+    rdfs:label "temperature_extreme" ;
+    skos:broader :param_10_minutes ;
+    skos:narrower :param_10_minutes_temperature_extreme_temperature_air_max_2m,
+                 :param_10_minutes_temperature_extreme_temperature_air_max_0_05m,
+                 :param_10_minutes_temperature_extreme_temperature_air_min_2m,
+                 :param_10_minutes_temperature_extreme_temperature_air_min_0_05m .
+
+:param_10_minutes_temperature_extreme_temperature_air_max_2m a skos:Concept ;
+    rdfs:label "temperature_air_max_2m" ;
+    skos:broader :param_10_minutes_temperature_extreme .
+
+:param_10_minutes_temperature_extreme_temperature_air_max_0_05m a skos:Concept ;
+    rdfs:label "temperature_air_max_0_05m" ;
+    skos:broader :param_10_minutes_temperature_extreme .
+
+:param_10_minutes_temperature_extreme_temperature_air_min_2m a skos:Concept ;
+    rdfs:label "temperature_air_min_2m" ;
+    skos:broader :param_10_minutes_temperature_extreme .
+
+:param_10_minutes_temperature_extreme_temperature_air_min_0_05m a skos:Concept ;
+    rdfs:label "temperature_air_min_0_05m" ;
+    skos:broader :param_10_minutes_temperature_extreme .
+
+:param_10_minutes_wind a skos:Concept ;
+    rdfs:label "wind" ;
+    skos:broader :param_10_minutes ;
+    skos:narrower :param_10_minutes_wind_wind_speed,
+                 :param_10_minutes_wind_wind_direction .
+
+:param_10_minutes_wind_wind_speed a skos:Concept ;
+    rdfs:label "wind_speed" ;
+    skos:broader :param_10_minutes_wind .
+
+:param_10_minutes_wind_wind_direction a skos:Concept ;
+    rdfs:label "wind_direction" ;
+    skos:broader :param_10_minutes_wind .
+
+:param_10_minutes_wind_extreme a skos:Concept ;
+    rdfs:label "wind_extreme" ;
+    skos:broader :param_10_minutes ;
+    skos:narrower :param_10_minutes_wind_extreme_wind_gust_max,
+                 :param_10_minutes_wind_extreme_wind_speed_min,
+                 :param_10_minutes_wind_extreme_wind_speed_rolling_mean_max,
+                 :param_10_minutes_wind_extreme_wind_direction_gust_max .
+
+:param_10_minutes_wind_extreme_wind_gust_max a skos:Concept ;
+    rdfs:label "wind_gust_max" ;
+    skos:broader :param_10_minutes_wind_extreme .
+
+:param_10_minutes_wind_extreme_wind_speed_min a skos:Concept ;
+    rdfs:label "wind_speed_min" ;
+    skos:broader :param_10_minutes_wind_extreme .
+
+:param_10_minutes_wind_extreme_wind_speed_rolling_mean_max a skos:Concept ;
+    rdfs:label "wind_speed_rolling_mean_max" ;
+    skos:broader :param_10_minutes_wind_extreme .
+
+:param_10_minutes_wind_extreme_wind_direction_gust_max a skos:Concept ;
+    rdfs:label "wind_direction_gust_max" ;
+    skos:broader :param_10_minutes_wind_extreme .
+
+# Hourly subcategories
+# Hourly subcategories - Cloud type category
+:param_hourly_cloud_type a skos:Concept ;
+    rdfs:label "cloud_type" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_cloud_type_cloud_cover_total,
+                 :param_hourly_cloud_type_cloud_cover_total_index,
+                 :param_hourly_cloud_type_cloud_type_layer1,
+                 :param_hourly_cloud_type_cloud_type_layer1_abbreviation,
+                 :param_hourly_cloud_type_cloud_height_layer1,
+                 :param_hourly_cloud_type_cloud_cover_layer1,
+                 :param_hourly_cloud_type_cloud_type_layer2,
+                 :param_hourly_cloud_type_cloud_type_layer2_abbreviation,
+                 :param_hourly_cloud_type_cloud_height_layer2,
+                 :param_hourly_cloud_type_cloud_cover_layer2,
+                 :param_hourly_cloud_type_cloud_type_layer3,
+                 :param_hourly_cloud_type_cloud_type_layer3_abbreviation,
+                 :param_hourly_cloud_type_cloud_height_layer3,
+                 :param_hourly_cloud_type_cloud_cover_layer3,
+                 :param_hourly_cloud_type_cloud_type_layer4,
+                 :param_hourly_cloud_type_cloud_type_layer4_abbreviation,
+                 :param_hourly_cloud_type_cloud_height_layer4,
+                 :param_hourly_cloud_type_cloud_cover_layer4 .
+
+:param_hourly_cloud_type_cloud_cover_total a skos:Concept ;
+    rdfs:label "cloud_cover_total" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_cover_total_index a skos:Concept ;
+    rdfs:label "cloud_cover_total_index" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer1 a skos:Concept ;
+    rdfs:label "cloud_type_layer1" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer1_abbreviation a skos:Concept ;
+    rdfs:label "cloud_type_layer1_abbreviation" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_height_layer1 a skos:Concept ;
+    rdfs:label "cloud_height_layer1" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_cover_layer1 a skos:Concept ;
+    rdfs:label "cloud_cover_layer1" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer2 a skos:Concept ;
+    rdfs:label "cloud_type_layer2" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer2_abbreviation a skos:Concept ;
+    rdfs:label "cloud_type_layer2_abbreviation" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_height_layer2 a skos:Concept ;
+    rdfs:label "cloud_height_layer2" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_cover_layer2 a skos:Concept ;
+    rdfs:label "cloud_cover_layer2" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer3 a skos:Concept ;
+    rdfs:label "cloud_type_layer3" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer3_abbreviation a skos:Concept ;
+    rdfs:label "cloud_type_layer3_abbreviation" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_height_layer3 a skos:Concept ;
+    rdfs:label "cloud_height_layer3" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_cover_layer3 a skos:Concept ;
+    rdfs:label "cloud_cover_layer3" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer4 a skos:Concept ;
+    rdfs:label "cloud_type_layer4" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_type_layer4_abbreviation a skos:Concept ;
+    rdfs:label "cloud_type_layer4_abbreviation" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_height_layer4 a skos:Concept ;
+    rdfs:label "cloud_height_layer4" ;
+    skos:broader :param_hourly_cloud_type .
+
+:param_hourly_cloud_type_cloud_cover_layer4 a skos:Concept ;
+    rdfs:label "cloud_cover_layer4" ;
+    skos:broader :param_hourly_cloud_type .
+
+# Hourly subcategories - Cloudiness category
+:param_hourly_cloudiness a skos:Concept ;
+    rdfs:label "cloudiness" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_cloudiness_cloud_cover_total_index,
+                 :param_hourly_cloudiness_cloud_cover_total .
+
+:param_hourly_cloudiness_cloud_cover_total_index a skos:Concept ;
+    rdfs:label "cloud_cover_total_index" ;
+    skos:broader :param_hourly_cloudiness .
+
+:param_hourly_cloudiness_cloud_cover_total a skos:Concept ;
+    rdfs:label "cloud_cover_total" ;
+    skos:broader :param_hourly_cloudiness .
+
+# Hourly subcategories - Dew point category
+:param_hourly_dew_point a skos:Concept ;
+    rdfs:label "dew_point" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_dew_point_temperature_air_mean_2m,
+                 :param_hourly_dew_point_temperature_dew_point_mean_2m .
+
+:param_hourly_dew_point_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_hourly_dew_point .
+
+:param_hourly_dew_point_temperature_dew_point_mean_2m a skos:Concept ;
+    rdfs:label "temperature_dew_point_mean_2m" ;
+    skos:broader :param_hourly_dew_point .
+
+# Hourly subcategories - Moisture category
+:param_hourly_moisture a skos:Concept ;
+    rdfs:label "moisture" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_moisture_humidity_absolute,
+                 :param_hourly_moisture_pressure_vapor,
+                 :param_hourly_moisture_temperature_wet_mean_2m,
+                 :param_hourly_moisture_pressure_air_site,
+                 :param_hourly_moisture_temperature_air_mean_2m,
+                 :param_hourly_moisture_humidity,
+                 :param_hourly_moisture_temperature_dew_point_mean_2m .
+
+:param_hourly_moisture_humidity_absolute a skos:Concept ;
+    rdfs:label "humidity_absolute" ;
+    skos:broader :param_hourly_moisture .
+
+:param_hourly_moisture_pressure_vapor a skos:Concept ;
+    rdfs:label "pressure_vapor" ;
+    skos:broader :param_hourly_moisture .
+
+:param_hourly_moisture_temperature_wet_mean_2m a skos:Concept ;
+    rdfs:label "temperature_wet_mean_2m" ;
+    skos:broader :param_hourly_moisture .
+
+:param_hourly_moisture_pressure_air_site a skos:Concept ;
+    rdfs:label "pressure_air_site" ;
+    skos:broader :param_hourly_moisture .
+
+:param_hourly_moisture_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_hourly_moisture .
+
+:param_hourly_moisture_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_hourly_moisture .
+
+:param_hourly_moisture_temperature_dew_point_mean_2m a skos:Concept ;
+    rdfs:label "temperature_dew_point_mean_2m" ;
+    skos:broader :param_hourly_moisture .
+
+# Hourly subcategories - Precipitation category
+:param_hourly_precipitation a skos:Concept ;
+    rdfs:label "precipitation" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_precipitation_precipitation_height,
+                 :param_hourly_precipitation_precipitation_index,
+                 :param_hourly_precipitation_precipitation_form .
+
+:param_hourly_precipitation_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_hourly_precipitation .
+
+:param_hourly_precipitation_precipitation_index a skos:Concept ;
+    rdfs:label "precipitation_index" ;
+    skos:broader :param_hourly_precipitation .
+
+:param_hourly_precipitation_precipitation_form a skos:Concept ;
+    rdfs:label "precipitation_form" ;
+    skos:broader :param_hourly_precipitation .
+
+# Hourly subcategories - Pressure category
+:param_hourly_pressure a skos:Concept ;
+    rdfs:label "pressure" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_pressure_pressure_air_sea_level,
+                 :param_hourly_pressure_pressure_air_site .
+
+:param_hourly_pressure_pressure_air_sea_level a skos:Concept ;
+    rdfs:label "pressure_air_sea_level" ;
+    skos:broader :param_hourly_pressure .
+
+:param_hourly_pressure_pressure_air_site a skos:Concept ;
+    rdfs:label "pressure_air_site" ;
+    skos:broader :param_hourly_pressure .
+
+# Hourly subcategories - Solar category
+:param_hourly_solar a skos:Concept ;
+    rdfs:label "solar" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_solar_end_of_interval,
+                 :param_hourly_solar_radiation_sky_long_wave,
+                 :param_hourly_solar_radiation_sky_short_wave_diffuse,
+                 :param_hourly_solar_radiation_global,
+                 :param_hourly_solar_sunshine_duration,
+                 :param_hourly_solar_sun_zenith_angle,
+                 :param_hourly_solar_true_local_time .
+
+:param_hourly_solar_end_of_interval a skos:Concept ;
+    rdfs:label "end_of_interval" ;
+    skos:broader :param_hourly_solar .
+
+:param_hourly_solar_radiation_sky_long_wave a skos:Concept ;
+    rdfs:label "radiation_sky_long_wave" ;
+    skos:broader :param_hourly_solar .
+
+:param_hourly_solar_radiation_sky_short_wave_diffuse a skos:Concept ;
+    rdfs:label "radiation_sky_short_wave_diffuse" ;
+    skos:broader :param_hourly_solar .
+
+:param_hourly_solar_radiation_global a skos:Concept ;
+    rdfs:label "radiation_global" ;
+    skos:broader :param_hourly_solar .
+
+:param_hourly_solar_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_hourly_solar .
+
+:param_hourly_solar_sun_zenith_angle a skos:Concept ;
+    rdfs:label "sun_zenith_angle" ;
+    skos:broader :param_hourly_solar .
+
+:param_hourly_solar_true_local_time a skos:Concept ;
+    rdfs:label "true_local_time" ;
+    skos:broader :param_hourly_solar .
+
+# Hourly subcategories - Sun category
+:param_hourly_sun a skos:Concept ;
+    rdfs:label "sun" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_sun_sunshine_duration .
+
+:param_hourly_sun_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_hourly_sun .
+
+# Hourly subcategories - Temperature air category
+:param_hourly_temperature_air a skos:Concept ;
+    rdfs:label "temperature_air" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_temperature_air_temperature_air_mean_2m,
+                 :param_hourly_temperature_air_humidity .
+
+:param_hourly_temperature_air_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_hourly_temperature_air .
+
+:param_hourly_temperature_air_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_hourly_temperature_air .
+
+# Hourly subcategories - Temperature soil category
+:param_hourly_temperature_soil a skos:Concept ;
+    rdfs:label "temperature_soil" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_temperature_soil_temperature_soil_mean_0_02m,
+                 :param_hourly_temperature_soil_temperature_soil_mean_0_05m,
+                 :param_hourly_temperature_soil_temperature_soil_mean_0_1m,
+                 :param_hourly_temperature_soil_temperature_soil_mean_0_2m,
+                 :param_hourly_temperature_soil_temperature_soil_mean_0_5m,
+                 :param_hourly_temperature_soil_temperature_soil_mean_1m .
+
+:param_hourly_temperature_soil_temperature_soil_mean_0_02m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_02m" ;
+    skos:broader :param_hourly_temperature_soil .
+
+:param_hourly_temperature_soil_temperature_soil_mean_0_05m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_05m" ;
+    skos:broader :param_hourly_temperature_soil .
+
+:param_hourly_temperature_soil_temperature_soil_mean_0_1m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_1m" ;
+    skos:broader :param_hourly_temperature_soil .
+
+:param_hourly_temperature_soil_temperature_soil_mean_0_2m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_2m" ;
+    skos:broader :param_hourly_temperature_soil .
+
+:param_hourly_temperature_soil_temperature_soil_mean_0_5m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_5m" ;
+    skos:broader :param_hourly_temperature_soil .
+
+:param_hourly_temperature_soil_temperature_soil_mean_1m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_1m" ;
+    skos:broader :param_hourly_temperature_soil .
+
+# Hourly subcategories - Visibility category
+:param_hourly_visibility a skos:Concept ;
+    rdfs:label "visibility" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_visibility_visibility_range_index,
+                 :param_hourly_visibility_visibility_range .
+
+:param_hourly_visibility_visibility_range_index a skos:Concept ;
+    rdfs:label "visibility_range_index" ;
+    skos:broader :param_hourly_visibility .
+
+:param_hourly_visibility_visibility_range a skos:Concept ;
+    rdfs:label "visibility_range" ;
+    skos:broader :param_hourly_visibility .
+
+# Hourly subcategories - Weather phenomena category
+:param_hourly_weather_phenomena a skos:Concept ;
+    rdfs:label "weather_phenomena" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_weather_phenomena_weather,
+                 :param_hourly_weather_phenomena_weather_text .
+
+:param_hourly_weather_phenomena_weather a skos:Concept ;
+    rdfs:label "weather" ;
+    skos:broader :param_hourly_weather_phenomena .
+
+:param_hourly_weather_phenomena_weather_text a skos:Concept ;
+    rdfs:label "weather_text" ;
+    skos:broader :param_hourly_weather_phenomena .
+
+# Hourly subcategories - Wind category
+:param_hourly_wind a skos:Concept ;
+    rdfs:label "wind" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_wind_wind_speed,
+                 :param_hourly_wind_wind_direction .
+
+:param_hourly_wind_wind_speed a skos:Concept ;
+    rdfs:label "wind_speed" ;
+    skos:broader :param_hourly_wind .
+
+:param_hourly_wind_wind_direction a skos:Concept ;
+    rdfs:label "wind_direction" ;
+    skos:broader :param_hourly_wind .
+
+# Hourly subcategories - Wind extreme category
+:param_hourly_wind_extreme a skos:Concept ;
+    rdfs:label "wind_extreme" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_wind_extreme_wind_gust_max .
+
+:param_hourly_wind_extreme_wind_gust_max a skos:Concept ;
+    rdfs:label "wind_gust_max" ;
+    skos:broader :param_hourly_wind_extreme .
+
+# Hourly subcategories - Wind synoptic category
+:param_hourly_wind_synoptic a skos:Concept ;
+    rdfs:label "wind_synoptic" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_wind_synoptic_wind_speed,
+                 :param_hourly_wind_synoptic_wind_direction .
+
+:param_hourly_wind_synoptic_wind_speed a skos:Concept ;
+    rdfs:label "wind_speed" ;
+    skos:broader :param_hourly_wind_synoptic .
+
+:param_hourly_wind_synoptic_wind_direction a skos:Concept ;
+    rdfs:label "wind_direction" ;
+    skos:broader :param_hourly_wind_synoptic .
+
+# Hourly subcategories - Urban precipitation category
+:param_hourly_urban_precipitation a skos:Concept ;
+    rdfs:label "urban_precipitation" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_urban_precipitation_precipitation_height .
+
+:param_hourly_urban_precipitation_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_hourly_urban_precipitation .
+
+# Hourly subcategories -  Urban pressure category
+:param_hourly_urban_pressure a skos:Concept ;
+    rdfs:label "urban_pressure" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_urban_pressure_pressure_air_sea_level,
+                 :param_hourly_urban_pressure_pressure_air_site .
+
+:param_hourly_urban_pressure_pressure_air_sea_level a skos:Concept ;
+    rdfs:label "pressure_air_sea_level" ;
+    skos:broader :param_hourly_urban_pressure .
+
+:param_hourly_urban_pressure_pressure_air_site a skos:Concept ;
+    rdfs:label "pressure_air_site" ;
+    skos:broader :param_hourly_urban_pressure .
+
+# Hourly subcategories - Urban sun category
+:param_hourly_urban_sun a skos:Concept ;
+    rdfs:label "urban_sun" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_urban_sun_sunshine_duration .
+
+:param_hourly_urban_sun_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_hourly_urban_sun .
+
+# Hourly subcategories - Urban temperature air category
+:param_hourly_urban_temperature_air a skos:Concept ;
+    rdfs:label "urban_temperature_air" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_urban_temperature_air_temperature_air_mean_2m,
+                 :param_hourly_urban_temperature_air_humidity .
+
+:param_hourly_urban_temperature_air_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_hourly_urban_temperature_air .
+
+:param_hourly_urban_temperature_air_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_hourly_urban_temperature_air .
+
+# Hourly subcategories - Urban temperature soil category
+:param_hourly_urban_temperature_soil a skos:Concept ;
+    rdfs:label "urban_temperature_soil" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_urban_temperature_soil_temperature_soil_mean_0_05m,
+                 :param_hourly_urban_temperature_soil_temperature_soil_mean_0_1m,
+                 :param_hourly_urban_temperature_soil_temperature_soil_mean_0_2m,
+                 :param_hourly_urban_temperature_soil_temperature_soil_mean_0_5m,
+                 :param_hourly_urban_temperature_soil_temperature_soil_mean_1m .
+
+:param_hourly_urban_temperature_soil_temperature_soil_mean_0_05m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_05m" ;
+    skos:broader :param_hourly_urban_temperature_soil .
+
+:param_hourly_urban_temperature_soil_temperature_soil_mean_0_1m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_1m" ;
+    skos:broader :param_hourly_urban_temperature_soil .
+
+:param_hourly_urban_temperature_soil_temperature_soil_mean_0_2m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_2m" ;
+    skos:broader :param_hourly_urban_temperature_soil .
+
+:param_hourly_urban_temperature_soil_temperature_soil_mean_0_5m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_5m" ;
+    skos:broader :param_hourly_urban_temperature_soil .
+
+:param_hourly_urban_temperature_soil_temperature_soil_mean_1m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_1m" ;
+    skos:broader :param_hourly_urban_temperature_soil .
+
+# Hourly subcategories - Urban wind category
+:param_hourly_urban_wind a skos:Concept ;
+    rdfs:label "urban_wind" ;
+    skos:broader :param_hourly ;
+    skos:narrower :param_hourly_urban_wind_wind_speed,
+                 :param_hourly_urban_wind_wind_direction .
+
+:param_hourly_urban_wind_wind_speed a skos:Concept ;
+    rdfs:label "wind_speed" ;
+    skos:broader :param_hourly_urban_wind .
+
+:param_hourly_urban_wind_wind_direction a skos:Concept ;
+    rdfs:label "wind_direction" ;
+    skos:broader :param_hourly_urban_wind .
+
+# Subdaily subcategories
+:param_subdaily_cloudiness a skos:Concept ;
+    rdfs:label "cloudiness" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_cloudiness_cloud_cover_total,
+                 :param_subdaily_cloudiness_cloud_density .
+
+:param_subdaily_cloudiness_cloud_cover_total a skos:Concept ;
+    rdfs:label "cloud_cover_total" ;
+    skos:broader :param_subdaily_cloudiness .
+
+:param_subdaily_cloudiness_cloud_density a skos:Concept ;
+    rdfs:label "cloud_density" ;
+    skos:broader :param_subdaily_cloudiness .
+
+:param_subdaily_moisture a skos:Concept ;
+    rdfs:label "moisture" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_moisture_pressure_vapor,
+                 :param_subdaily_moisture_temperature_air_mean_0_05m,
+                 :param_subdaily_moisture_temperature_air_mean_2m,
+                 :param_subdaily_moisture_humidity .
+
+:param_subdaily_moisture_pressure_vapor a skos:Concept ;
+    rdfs:label "pressure_vapor" ;
+    skos:broader :param_subdaily_moisture .
+
+:param_subdaily_moisture_temperature_air_mean_0_05m a skos:Concept ;
+    rdfs:label "temperature_air_mean_0_05m" ;
+    skos:broader :param_subdaily_moisture .
+
+:param_subdaily_moisture_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_subdaily_moisture .
+
+:param_subdaily_moisture_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_subdaily_moisture .
+
+:param_subdaily_pressure a skos:Concept ;
+    rdfs:label "pressure" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_pressure_pressure_air_site .
+
+:param_subdaily_pressure_pressure_air_site a skos:Concept ;
+    rdfs:label "pressure_air_site" ;
+    skos:broader :param_subdaily_pressure .
+
+:param_subdaily_soil a skos:Concept ;
+    rdfs:label "soil" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_soil_temperature_soil_mean_0_05m .
+
+:param_subdaily_soil_temperature_soil_mean_0_05m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_05m" ;
+    skos:broader :param_subdaily_soil .
+
+:param_subdaily_temperature_air a skos:Concept ;
+    rdfs:label "temperature_air" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_temperature_air_temperature_air_mean_2m,
+                 :param_subdaily_temperature_air_humidity .
+
+:param_subdaily_temperature_air_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_subdaily_temperature_air .
+
+:param_subdaily_temperature_air_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_subdaily_temperature_air .
+
+:param_subdaily_visibility a skos:Concept ;
+    rdfs:label "visibility" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_visibility_visibility_range .
+
+:param_subdaily_visibility_visibility_range a skos:Concept ;
+    rdfs:label "visibility_range" ;
+    skos:broader :param_subdaily_visibility .
+
+:param_subdaily_wind a skos:Concept ;
+    rdfs:label "wind" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_wind_wind_direction,
+                 :param_subdaily_wind_wind_force_beaufort .
+
+:param_subdaily_wind_wind_direction a skos:Concept ;
+    rdfs:label "wind_direction" ;
+    skos:broader :param_subdaily_wind .
+
+:param_subdaily_wind_wind_force_beaufort a skos:Concept ;
+    rdfs:label "wind_force_beaufort" ;
+    skos:broader :param_subdaily_wind .
+
+:param_subdaily_wind_extreme a skos:Concept ;
+    rdfs:label "wind_extreme" ;
+    skos:broader :param_subdaily ;
+    skos:narrower :param_subdaily_wind_extreme_wind_gust_max_last_3h,
+                 :param_subdaily_wind_extreme_wind_gust_max_last_6h .
+
+:param_subdaily_wind_extreme_wind_gust_max_last_3h a skos:Concept ;
+    rdfs:label "wind_gust_max_last_3h" ;
+    skos:broader :param_subdaily_wind_extreme .
+
+:param_subdaily_wind_extreme_wind_gust_max_last_6h a skos:Concept ;
+    rdfs:label "wind_gust_max_last_6h" ;
+    skos:broader :param_subdaily_wind_extreme .
+
+# Daily subcategories
+:param_daily_climate_summary a skos:Concept ;
+    rdfs:label "climate_summary" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_climate_summary_wind_gust_max,
+                 :param_daily_climate_summary_wind_speed,
+                 :param_daily_climate_summary_precipitation_height,
+                 :param_daily_climate_summary_precipitation_form,
+                 :param_daily_climate_summary_sunshine_duration,
+                 :param_daily_climate_summary_snow_depth,
+                 :param_daily_climate_summary_cloud_cover_total,
+                 :param_daily_climate_summary_pressure_vapor,
+                 :param_daily_climate_summary_pressure_air_site,
+                 :param_daily_climate_summary_temperature_air_mean_2m,
+                 :param_daily_climate_summary_humidity,
+                 :param_daily_climate_summary_temperature_air_max_2m,
+                 :param_daily_climate_summary_temperature_air_min_2m,
+                 :param_daily_climate_summary_temperature_air_min_0_05m .
+
+:param_daily_climate_summary_wind_gust_max a skos:Concept ;
+    rdfs:label "wind_gust_max" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_wind_speed a skos:Concept ;
+    rdfs:label "wind_speed" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_precipitation_form a skos:Concept ;
+    rdfs:label "precipitation_form" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_snow_depth a skos:Concept ;
+    rdfs:label "snow_depth" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_cloud_cover_total a skos:Concept ;
+    rdfs:label "cloud_cover_total" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_pressure_vapor a skos:Concept ;
+    rdfs:label "pressure_vapor" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_pressure_air_site a skos:Concept ;
+    rdfs:label "pressure_air_site" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_humidity a skos:Concept ;
+    rdfs:label "humidity" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_temperature_air_max_2m a skos:Concept ;
+    rdfs:label "temperature_air_max_2m" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_temperature_air_min_2m a skos:Concept ;
+    rdfs:label "temperature_air_min_2m" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_climate_summary_temperature_air_min_0_05m a skos:Concept ;
+    rdfs:label "temperature_air_min_0_05m" ;
+    skos:broader :param_daily_climate_summary .
+
+:param_daily_precipitation_more a skos:Concept ;
+    rdfs:label "precipitation_more" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_precipitation_more_precipitation_height,
+                 :param_daily_precipitation_more_precipitation_form,
+                 :param_daily_precipitation_more_snow_depth,
+                 :param_daily_precipitation_more_snow_depth_new .
+
+:param_daily_precipitation_more_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_daily_precipitation_more .
+
+:param_daily_precipitation_more_precipitation_form a skos:Concept ;
+    rdfs:label "precipitation_form" ;
+    skos:broader :param_daily_precipitation_more .
+
+:param_daily_precipitation_more_snow_depth a skos:Concept ;
+    rdfs:label "snow_depth" ;
+    skos:broader :param_daily_precipitation_more .
+
+:param_daily_precipitation_more_snow_depth_new a skos:Concept ;
+    rdfs:label "snow_depth_new" ;
+    skos:broader :param_daily_precipitation_more .
+
+:param_daily_solar a skos:Concept ;
+    rdfs:label "solar" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_solar_radiation_sky_long_wave,
+                 :param_daily_solar_radiation_sky_short_wave_diffuse,
+                 :param_daily_solar_radiation_global,
+                 :param_daily_solar_sunshine_duration .
+
+:param_daily_solar_radiation_sky_long_wave a skos:Concept ;
+    rdfs:label "radiation_sky_long_wave" ;
+    skos:broader :param_daily_solar .
+
+:param_daily_solar_radiation_sky_short_wave_diffuse a skos:Concept ;
+    rdfs:label "radiation_sky_short_wave_diffuse" ;
+    skos:broader :param_daily_solar .
+
+:param_daily_solar_radiation_global a skos:Concept ;
+    rdfs:label "radiation_global" ;
+    skos:broader :param_daily_solar .
+
+:param_daily_solar_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_daily_solar .
+
+:param_daily_temperature_soil a skos:Concept ;
+    rdfs:label "temperature_soil" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_temperature_soil_temperature_soil_mean_0_02m,
+                 :param_daily_temperature_soil_temperature_soil_mean_0_05m,
+                 :param_daily_temperature_soil_temperature_soil_mean_0_1m,
+                 :param_daily_temperature_soil_temperature_soil_mean_0_2m,
+                 :param_daily_temperature_soil_temperature_soil_mean_0_5m,
+                 :param_daily_temperature_soil_temperature_soil_mean_1m .
+
+:param_daily_temperature_soil_temperature_soil_mean_0_02m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_02m" ;
+    skos:broader :param_daily_temperature_soil .
+
+:param_daily_temperature_soil_temperature_soil_mean_0_05m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_05m" ;
+    skos:broader :param_daily_temperature_soil .
+
+:param_daily_temperature_soil_temperature_soil_mean_0_1m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_1m" ;
+    skos:broader :param_daily_temperature_soil .
+
+:param_daily_temperature_soil_temperature_soil_mean_0_2m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_2m" ;
+    skos:broader :param_daily_temperature_soil .
+
+:param_daily_temperature_soil_temperature_soil_mean_0_5m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_0_5m" ;
+    skos:broader :param_daily_temperature_soil .
+
+:param_daily_temperature_soil_temperature_soil_mean_1m a skos:Concept ;
+    rdfs:label "temperature_soil_mean_1m" ;
+    skos:broader :param_daily_temperature_soil .
+
+:param_daily_water_equivalent a skos:Concept ;
+    rdfs:label "water_equivalent" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_water_equivalent_snow_depth_excelled,
+                 :param_daily_water_equivalent_snow_depth,
+                 :param_daily_water_equivalent_water_equivalent_snow_depth,
+                 :param_daily_water_equivalent_water_equivalent_snow_depth_excelled .
+
+:param_daily_water_equivalent_snow_depth_excelled a skos:Concept ;
+    rdfs:label "snow_depth_excelled" ;
+    skos:broader :param_daily_water_equivalent .
+
+:param_daily_water_equivalent_snow_depth a skos:Concept ;
+    rdfs:label "snow_depth" ;
+    skos:broader :param_daily_water_equivalent .
+
+:param_daily_water_equivalent_water_equivalent_snow_depth a skos:Concept ;
+    rdfs:label "water_equivalent_snow_depth" ;
+    skos:broader :param_daily_water_equivalent .
+
+:param_daily_water_equivalent_water_equivalent_snow_depth_excelled a skos:Concept ;
+    rdfs:label "water_equivalent_snow_depth_excelled" ;
+    skos:broader :param_daily_water_equivalent .
+
+:param_daily_weather_phenomena a skos:Concept ;
+    rdfs:label "weather_phenomena" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_weather_phenomena_count_weather_type_fog,
+                 :param_daily_weather_phenomena_count_weather_type_thunder,
+                 :param_daily_weather_phenomena_count_weather_type_storm_strong_wind,
+                 :param_daily_weather_phenomena_count_weather_type_storm_stormier_wind,
+                 :param_daily_weather_phenomena_count_weather_type_dew,
+                 :param_daily_weather_phenomena_count_weather_type_glaze,
+                 :param_daily_weather_phenomena_count_weather_type_ripe,
+                 :param_daily_weather_phenomena_count_weather_type_sleet,
+                 :param_daily_weather_phenomena_count_weather_type_hail .
+
+:param_daily_weather_phenomena_count_weather_type_fog a skos:Concept ;
+    rdfs:label "count_weather_type_fog" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_thunder a skos:Concept ;
+    rdfs:label "count_weather_type_thunder" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_storm_strong_wind a skos:Concept ;
+    rdfs:label "count_weather_type_storm_strong_wind" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_storm_stormier_wind a skos:Concept ;
+    rdfs:label "count_weather_type_storm_stormier_wind" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_dew a skos:Concept ;
+    rdfs:label "count_weather_type_dew" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_glaze a skos:Concept ;
+    rdfs:label "count_weather_type_glaze" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_ripe a skos:Concept ;
+    rdfs:label "count_weather_type_ripe" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_sleet a skos:Concept ;
+    rdfs:label "count_weather_type_sleet" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_count_weather_type_hail a skos:Concept ;
+    rdfs:label "count_weather_type_hail" ;
+    skos:broader :param_daily_weather_phenomena .
+
+:param_daily_weather_phenomena_more a skos:Concept ;
+    rdfs:label "weather_phenomena_more" ;
+    skos:broader :param_daily ;
+    skos:narrower :param_daily_weather_phenomena_more_count_weather_type_sleet,
+                 :param_daily_weather_phenomena_more_count_weather_type_hail,
+                 :param_daily_weather_phenomena_more_count_weather_type_fog,
+                 :param_daily_weather_phenomena_more_count_weather_type_thunder .
+
+:param_daily_weather_phenomena_more_count_weather_type_sleet a skos:Concept ;
+    rdfs:label "count_weather_type_sleet" ;
+    skos:broader :param_daily_weather_phenomena_more .
+
+:param_daily_weather_phenomena_more_count_weather_type_hail a skos:Concept ;
+    rdfs:label "count_weather_type_hail" ;
+    skos:broader :param_daily_weather_phenomena_more .
+
+:param_daily_weather_phenomena_more_count_weather_type_fog a skos:Concept ;
+    rdfs:label "count_weather_type_fog" ;
+    skos:broader :param_daily_weather_phenomena_more .
+
+:param_daily_weather_phenomena_more_count_weather_type_thunder a skos:Concept ;
+    rdfs:label "count_weather_type_thunder" ;
+    skos:broader :param_daily_weather_phenomena_more .
+
+# Monthly subcategories
+:param_monthly_climate_summary a skos:Concept ;
+    rdfs:label "climate_summary" ;
+    skos:broader :param_monthly ;
+    skos:narrower :param_monthly_climate_summary_cloud_cover_total,
+                 :param_monthly_climate_summary_temperature_air_mean_2m,
+                 :param_monthly_climate_summary_temperature_air_max_2m_mean,
+                 :param_monthly_climate_summary_temperature_air_min_2m_mean,
+                 :param_monthly_climate_summary_sunshine_duration,
+                 :param_monthly_climate_summary_wind_force_beaufort,
+                 :param_monthly_climate_summary_temperature_air_max_2m,
+                 :param_monthly_climate_summary_wind_gust_max,
+                 :param_monthly_climate_summary_temperature_air_min_2m,
+                 :param_monthly_climate_summary_precipitation_height,
+                 :param_monthly_climate_summary_precipitation_height_max .
+
+:param_monthly_climate_summary_cloud_cover_total a skos:Concept ;
+    rdfs:label "cloud_cover_total" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_temperature_air_max_2m_mean a skos:Concept ;
+    rdfs:label "temperature_air_max_2m_mean" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_temperature_air_min_2m_mean a skos:Concept ;
+    rdfs:label "temperature_air_min_2m_mean" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_wind_force_beaufort a skos:Concept ;
+    rdfs:label "wind_force_beaufort" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_temperature_air_max_2m a skos:Concept ;
+    rdfs:label "temperature_air_max_2m" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_wind_gust_max a skos:Concept ;
+    rdfs:label "wind_gust_max" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_temperature_air_min_2m a skos:Concept ;
+    rdfs:label "temperature_air_min_2m" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_climate_summary_precipitation_height_max a skos:Concept ;
+    rdfs:label "precipitation_height_max" ;
+    skos:broader :param_monthly_climate_summary .
+
+:param_monthly_precipitation_more a skos:Concept ;
+    rdfs:label "precipitation_more" ;
+    skos:broader :param_monthly ;
+    skos:narrower :param_monthly_precipitation_more_snow_depth_new,
+                 :param_monthly_precipitation_more_precipitation_height,
+                 :param_monthly_precipitation_more_snow_depth,
+                 :param_monthly_precipitation_more_precipitation_height_max .
+
+:param_monthly_precipitation_more_snow_depth_new a skos:Concept ;
+    rdfs:label "snow_depth_new" ;
+    skos:broader :param_monthly_precipitation_more .
+
+:param_monthly_precipitation_more_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_monthly_precipitation_more .
+
+:param_monthly_precipitation_more_snow_depth a skos:Concept ;
+    rdfs:label "snow_depth" ;
+    skos:broader :param_monthly_precipitation_more .
+
+:param_monthly_precipitation_more_precipitation_height_max a skos:Concept ;
+    rdfs:label "precipitation_height_max" ;
+    skos:broader :param_monthly_precipitation_more .
+
+:param_monthly_weather_phenomena a skos:Concept ;
+    rdfs:label "weather_phenomena" ;
+    skos:broader :param_monthly ;
+    skos:narrower :param_monthly_weather_phenomena_count_weather_type_storm_strong_wind,
+                 :param_monthly_weather_phenomena_count_weather_type_storm_stormier_wind,
+                 :param_monthly_weather_phenomena_count_weather_type_thunder,
+                 :param_monthly_weather_phenomena_count_weather_type_glaze,
+                 :param_monthly_weather_phenomena_count_weather_type_sleet,
+                 :param_monthly_weather_phenomena_count_weather_type_hail,
+                 :param_monthly_weather_phenomena_count_weather_type_fog,
+                 :param_monthly_weather_phenomena_count_weather_type_dew .
+
+:param_monthly_weather_phenomena_count_weather_type_storm_strong_wind a skos:Concept ;
+    rdfs:label "count_weather_type_storm_strong_wind" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_storm_stormier_wind a skos:Concept ;
+    rdfs:label "count_weather_type_storm_stormier_wind" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_thunder a skos:Concept ;
+    rdfs:label "count_weather_type_thunder" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_glaze a skos:Concept ;
+    rdfs:label "count_weather_type_glaze" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_sleet a skos:Concept ;
+    rdfs:label "count_weather_type_sleet" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_hail a skos:Concept ;
+    rdfs:label "count_weather_type_hail" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_fog a skos:Concept ;
+    rdfs:label "count_weather_type_fog" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+:param_monthly_weather_phenomena_count_weather_type_dew a skos:Concept ;
+    rdfs:label "count_weather_type_dew" ;
+    skos:broader :param_monthly_weather_phenomena .
+
+# Annual subcategories
+:param_annual_climate_summary a skos:Concept ;
+    rdfs:label "climate_summary" ;
+    skos:broader :param_annual ;
+    skos:narrower :param_annual_climate_summary_cloud_cover_total,
+                 :param_annual_climate_summary_temperature_air_mean_2m,
+                 :param_annual_climate_summary_temperature_air_max_2m_mean,
+                 :param_annual_climate_summary_temperature_air_min_2m_mean,
+                 :param_annual_climate_summary_sunshine_duration,
+                 :param_annual_climate_summary_wind_force_beaufort,
+                 :param_annual_climate_summary_temperature_air_max_2m,
+                 :param_annual_climate_summary_wind_gust_max,
+                 :param_annual_climate_summary_temperature_air_min_2m,
+                 :param_annual_climate_summary_precipitation_height,
+                 :param_annual_climate_summary_precipitation_height_max .
+
+:param_annual_climate_summary_cloud_cover_total a skos:Concept ;
+    rdfs:label "cloud_cover_total" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_temperature_air_mean_2m a skos:Concept ;
+    rdfs:label "temperature_air_mean_2m" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_temperature_air_max_2m_mean a skos:Concept ;
+    rdfs:label "temperature_air_max_2m_mean" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_temperature_air_min_2m_mean a skos:Concept ;
+    rdfs:label "temperature_air_min_2m_mean" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_sunshine_duration a skos:Concept ;
+    rdfs:label "sunshine_duration" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_wind_force_beaufort a skos:Concept ;
+    rdfs:label "wind_force_beaufort" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_temperature_air_max_2m a skos:Concept ;
+    rdfs:label "temperature_air_max_2m" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_wind_gust_max a skos:Concept ;
+    rdfs:label "wind_gust_max" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_temperature_air_min_2m a skos:Concept ;
+    rdfs:label "temperature_air_min_2m" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_climate_summary_precipitation_height_max a skos:Concept ;
+    rdfs:label "precipitation_height_max" ;
+    skos:broader :param_annual_climate_summary .
+
+:param_annual_precipitation_more a skos:Concept ;
+    rdfs:label "precipitation_more" ;
+    skos:broader :param_annual ;
+    skos:narrower :param_annual_precipitation_more_snow_depth_new,
+                 :param_annual_precipitation_more_precipitation_height,
+                 :param_annual_precipitation_more_snow_depth,
+                 :param_annual_precipitation_more_precipitation_height_max .
+
+:param_annual_precipitation_more_snow_depth_new a skos:Concept ;
+    rdfs:label "snow_depth_new" ;
+    skos:broader :param_annual_precipitation_more .
+
+:param_annual_precipitation_more_precipitation_height a skos:Concept ;
+    rdfs:label "precipitation_height" ;
+    skos:broader :param_annual_precipitation_more .
+
+:param_annual_precipitation_more_snow_depth a skos:Concept ;
+    rdfs:label "snow_depth" ;
+    skos:broader :param_annual_precipitation_more .
+
+:param_annual_precipitation_more_precipitation_height_max a skos:Concept ;
+    rdfs:label "precipitation_height_max" ;
+    skos:broader :param_annual_precipitation_more .
+
+:param_annual_weather_phenomena a skos:Concept ;
+    rdfs:label "weather_phenomena" ;
+    skos:broader :param_annual ;
+    skos:narrower :param_annual_weather_phenomena_count_weather_type_storm_strong_wind,
+                 :param_annual_weather_phenomena_count_weather_type_storm_stormier_wind,
+                 :param_annual_weather_phenomena_count_weather_type_thunder,
+                 :param_annual_weather_phenomena_count_weather_type_glaze,
+                 :param_annual_weather_phenomena_count_weather_type_sleet,
+                 :param_annual_weather_phenomena_count_weather_type_hail,
+                 :param_annual_weather_phenomena_count_weather_type_fog,
+                 :param_annual_weather_phenomena_count_weather_type_dew .
+
+:param_annual_weather_phenomena_count_weather_type_storm_strong_wind a skos:Concept ;
+    rdfs:label "count_weather_type_storm_strong_wind" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_storm_stormier_wind a skos:Concept ;
+    rdfs:label "count_weather_type_storm_stormier_wind" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_thunder a skos:Concept ;
+    rdfs:label "count_weather_type_thunder" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_glaze a skos:Concept ;
+    rdfs:label "count_weather_type_glaze" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_sleet a skos:Concept ;
+    rdfs:label "count_weather_type_sleet" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_hail a skos:Concept ;
+    rdfs:label "count_weather_type_hail" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_fog a skos:Concept ;
+    rdfs:label "count_weather_type_fog" ;
+    skos:broader :param_annual_weather_phenomena .
+
+:param_annual_weather_phenomena_count_weather_type_dew a skos:Concept ;
+    rdfs:label "count_weather_type_dew" ;
+    skos:broader :param_annual_weather_phenomena .
