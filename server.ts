@@ -94,52 +94,54 @@ function determineResponseFormat(ctx: Context): {
  * - format (optional, default: "json", can be "rdf")
  */
 router.get("/stations", async (ctx) => {
-    try {
-      const url = ctx.request.url;
-      const provider = url.searchParams.get("provider") || "dwd";
-      const network = url.searchParams.get("network") || "observation";
-      const parameters = url.searchParams.get("parameters");
-      const periods = url.searchParams.get("periods") || "recent";
-      const { format, contentType } = determineResponseFormat(ctx);
-  
-      // Check required parameters
-      if (!parameters) {
+  try {
+    const url = ctx.request.url;
+    const provider = url.searchParams.get("provider") || "dwd";
+    const network = url.searchParams.get("network") || "observation";
+    const parameters = url.searchParams.get("parameters");
+    const periods = url.searchParams.get("periods") || "recent";
+    const { format, contentType } = determineResponseFormat(ctx);
+
+    // Check required parameters
+    if (!parameters) {
+      ctx.response.status = 400;
+      ctx.response.body = { error: "Missing required parameter: parameters" };
+      return;
+    }
+
+    // Check if location-based search is requested
+    let coords: [number, number] | undefined = undefined;
+    const coordinates = url.searchParams.get("coordinates");
+
+    if (coordinates) {
+      const [latStr, lonStr] = coordinates.split(",");
+      const latNum = parseFloat(latStr);
+      const lonNum = parseFloat(lonStr);
+
+      if (isNaN(latNum) || isNaN(lonNum)) {
         ctx.response.status = 400;
-        ctx.response.body = { error: "Missing required parameter: parameters" };
+        ctx.response.body = {
+          error: "Invalid coordinates format. Expected: lat,lon",
+        };
         return;
       }
-      
-      // Check if location-based search is requested
-      let coords: [number, number] | undefined = undefined;
-      const coordinates = url.searchParams.get("coordinates");
-      
-      if (coordinates) {
-        const [latStr, lonStr] = coordinates.split(",");
-        const latNum = parseFloat(latStr);
-        const lonNum = parseFloat(lonStr);
-        
-        if (isNaN(latNum) || isNaN(lonNum)) {
-          ctx.response.status = 400;
-          ctx.response.body = { error: "Invalid coordinates format. Expected: lat,lon" };
-          return;
-        }
-        
-        coords = [latNum, lonNum];
-      }
-  
-      // Optional rank parameter for location-based searches
-      const rankParam = url.searchParams.get("rank");
-      const rank = rankParam ? parseInt(rankParam) : 5;
-  
-      // Fetch stations
-      const stations = await wetterdienstClient.getStations({
-        provider,
-        network,
-        parameters,
-        periods,
-        coordinates: coords,
-        rank: coords ? rank : undefined,
-      });
+
+      coords = [latNum, lonNum];
+    }
+
+    // Optional rank parameter for location-based searches
+    const rankParam = url.searchParams.get("rank");
+    const rank = rankParam ? parseInt(rankParam) : 5;
+
+    // Fetch stations
+    const stations = await wetterdienstClient.getStations({
+      provider,
+      network,
+      parameters,
+      periods,
+      coordinates: coords,
+      rank: coords ? rank : undefined,
+    });
 
     // Return response in requested format
     if (format === "rdf") {

@@ -124,7 +124,7 @@ export function stationsToRDF(
       stationUri,
       namedNode(`${SCHEMA_NAMESPACE}distance`),
       literal((station.distance?.toString() || 0) + " km"),
-    )
+    );
   });
 
   // Return serialized RDF
