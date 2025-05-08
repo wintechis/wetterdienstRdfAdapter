@@ -46,11 +46,6 @@ function determineResponseFormat(ctx: Context): {
 } {
   const acceptHeader = ctx.request.headers.get("Accept") || "";
 
-  // If no Accept header, default to JSON
-  if (!acceptHeader) {
-    return { format: "json", contentType: "application/json" };
-  }
-
   // Parse and sort media types by quality parameter
   const mediaTypes = parseAcceptHeader(acceptHeader);
 
@@ -74,11 +69,6 @@ function determineResponseFormat(ctx: Context): {
     // Then check for supported RDF formats
     if (rdfMediaTypes.includes(mediaType)) {
       return { format: "rdf", contentType: mediaType };
-    }
-
-    // Special case for any JSON type or any type
-    if (mediaType.endsWith("+json")) {
-      return { format: "json", contentType: "application/json" };
     }
   }
 
