@@ -12,6 +12,7 @@ const {
   RDFS_NAMESPACE,
   XSD_NAMESPACE,
   GEO_NAMESPACE,
+  SCHEMA_NAMESPACE,
 } = RDF_NAMESPACES;
 
 /**
@@ -34,6 +35,7 @@ export function stationsToRDF(
       rdfs: RDFS_NAMESPACE,
       xsd: XSD_NAMESPACE,
       wgs: GEO_NAMESPACE,
+      schema: SCHEMA_NAMESPACE,
     },
     format: format,
   });
@@ -116,6 +118,13 @@ export function stationsToRDF(
       namedNode(`${DWD_NAMESPACE}end_date`),
       literal(station.end_date, namedNode(`${XSD_NAMESPACE}dateTime`)),
     );
+
+    // Distance
+    writer.addQuad(
+      stationUri,
+      namedNode(`${SCHEMA_NAMESPACE}distance`),
+      literal((station.distance?.toString() || 0) + " km"),
+    )
   });
 
   // Return serialized RDF

@@ -14,4 +14,5 @@ export const RDF_NAMESPACES = {
   GEO_NAMESPACE: "http://www.w3.org/2003/01/geo/wgs84_pos#",
   QUDT_NAMESPACE: "http://qudt.org/1.1/schema/qudt#",
   QUDT_UNIT_NAMESPACE: "http://qudt.org/1.1/vocab/unit#",
+  SCHEMA_NAMESPACE: "http://schema.org/",
 };

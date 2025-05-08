@@ -80,6 +80,7 @@ export interface Station {
   height: number;
   name: string;
   state: string;
+  distance?: number;
 }
 
 /**
