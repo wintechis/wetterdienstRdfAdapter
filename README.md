@@ -18,7 +18,7 @@ The API supports content negotiation through the `Accept` header:
 - Stations (`/stations`) and Values (`/values`) endpoints support:
   - `text/turtle` (default format when no specific format is requested)
   - `application/n-triples`
-  - `application/n-quads` 
+  - `application/n-quads`
   - `application/trig`
   - `text/n3`
   - `application/ld+json`
