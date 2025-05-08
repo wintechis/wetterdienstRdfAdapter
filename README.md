@@ -5,6 +5,8 @@ This library provides a Deno-based interface to the Wetterdienst API with RDF co
 ## Usage
 
 This library is can be used with Deno or via its REST API.
+
+### Using the API
 The REST API is available at `https://wetterdienst-rdf-adapter.deno.dev`.
 
 For example to get a list of stations providing annual measurements of annual sunshine duration near given coordinates `[49.019533,12.097487]`, you can GET the following URL:
@@ -21,10 +23,14 @@ foo@bar:~$ curl -X GET -H "Accept: text/turtle" \
 "https://wetterdienst-rdf-adapter.deno.dev/values?provider=dwd&network=observation&parameters=annual%2Fclimate_summary%2Fsunshine_duration&periods=recent&station=04104&date=2024-01-01"
 ```
 
+### Using the Library
+
+To use the library in your own Deno project first add it via `deno add jsr:@wintechis/wetterdienst-rdf-adapter`.
+
+Then you can use the library as follows:
+
 ```typescript
-import { wetterdienstClient } from "./client.ts";
-import { valuesToRDF } from "./values.ts";
-import { WeatherParameters } from "./parameter-types.ts";
+import { valuesToRDF, WeatherParameters, wetterdienstClient } from "@wintechis/wetterdienst-rdf-adapter";
 
 // Get stations near a location
 const stations = await wetterdienstClient.getStations({
