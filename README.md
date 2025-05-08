@@ -10,7 +10,23 @@ This library is can be used with Deno or via its REST API.
 
 The REST API is available at `https://wetterdienst-rdf-adapter.deno.dev`.
 
-For example to get a list of stations providing annual measurements of annual sunshine duration near given coordinates `[49.019533,12.097487]`, you can GET the following URL:
+#### Response Formats
+
+The API supports content negotiation through the `Accept` header:
+
+- Root endpoint (`/`): Only supports `application/json`
+- Stations (`/stations`) and Values (`/values`) endpoints support:
+  - `text/turtle` (default format when no specific format is requested)
+  - `application/n-triples`
+  - `application/n-quads` 
+  - `application/trig`
+  - `text/n3`
+  - `application/ld+json`
+  - `application/json` (only when explicitly requested)
+
+The `text/turtle` format is used as the default when no specific format is requested or when an unsupported format is specified.
+
+#### Example Requests
 
 ```console
 foo@bar:~$ curl -X GET -H "Accept: text/turtle" \
