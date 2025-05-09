@@ -92,25 +92,25 @@
         http:headers (
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "text/turtle" ;
-              rdfs:comment "Default RDF format when Accept header requests RDF" ],
+              rdfs:comment "Default RDF format when Accept header requests RDF" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/n-triples" ;
-              rdfs:comment "When Accept header is application/n-triples" ],
+              rdfs:comment "When Accept header is application/n-triples" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/n-quads" ;
-              rdfs:comment "When Accept header is application/n-quads" ],
+              rdfs:comment "When Accept header is application/n-quads" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/trig" ;
-              rdfs:comment "When Accept header is application/trig" ],
+              rdfs:comment "When Accept header is application/trig" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "text/n3" ;
-              rdfs:comment "When Accept header is text/n3" ],
+              rdfs:comment "When Accept header is text/n3" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/ld+json" ;
-              rdfs:comment "When Accept header is application/ld+json" ],
+              rdfs:comment "When Accept header is application/ld+json" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/json" ;
-              rdfs:comment "Default format when no matching Accept header" ],
+              rdfs:comment "Default format when no matching Accept header" ]
             [ http:fieldName "Vary" ; http:fieldValue "Accept" ]
         )
     ] .
@@ -195,25 +195,25 @@
         http:headers (
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "text/turtle" ;
-              rdfs:comment "Default RDF format when Accept header requests RDF" ],
+              rdfs:comment "Default RDF format when Accept header requests RDF" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/n-triples" ;
-              rdfs:comment "When Accept header is application/n-triples" ],
+              rdfs:comment "When Accept header is application/n-triples" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/n-quads" ;
-              rdfs:comment "When Accept header is application/n-quads" ],
+              rdfs:comment "When Accept header is application/n-quads" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/trig" ;
-              rdfs:comment "When Accept header is application/trig" ],
+              rdfs:comment "When Accept header is application/trig" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "text/n3" ;
-              rdfs:comment "When Accept header is text/n3" ],
+              rdfs:comment "When Accept header is text/n3" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/ld+json" ;
-              rdfs:comment "When Accept header is application/ld+json" ],
+              rdfs:comment "When Accept header is application/ld+json" ]
             [ http:fieldName "Content-Type" ; 
               http:fieldValue "application/json" ;
-              rdfs:comment "Default format when no matching Accept header" ],
+              rdfs:comment "Default format when no matching Accept header" ]
             [ http:fieldName "Vary" ; http:fieldValue "Accept" ]
         )
     ] .
