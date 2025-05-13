@@ -22,7 +22,7 @@ The API supports content negotiation through the `Accept` header:
   - `application/trig`
   - `text/n3`
   - `application/ld+json`
-  - `application/json` (only when explicitly requested)
+  - `application/json`
 
 The `text/turtle` format is used as the default when no specific format is requested or when an unsupported format is specified.
 
