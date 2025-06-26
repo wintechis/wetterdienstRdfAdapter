@@ -1,6 +1,6 @@
 # Wetterdienst RDF Adapter
 
-This library provides a Deno-based interface to the Wetterdienst API with RDF conversion capabilities.
+This library provides a Deno-based interface to the [Wetterdienst API](https://wetterdienst.eobs.org/) with RDF conversion capabilities.
 
 ## Usage
 
