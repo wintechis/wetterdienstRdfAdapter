@@ -23,6 +23,19 @@ export class WetterdienstClient {
   }
 
   /**
+   * Configure the client with new options and return a new instance
+   * @param options Configuration options
+   * @returns A new WetterdienstClient instance with updated configuration
+   */
+  configure(options: { baseUrl?: string; maxRetries?: number; timeout?: number }): WetterdienstClient {
+    return new WetterdienstClient(
+      options.baseUrl ?? this.baseUrl,
+      options.maxRetries ?? this.maxRetries,
+      options.timeout ?? this.timeout
+    );
+  }
+
+  /**
    * Generic method to fetch data from any wetterdienst API endpoint with retry logic
    * @param endpoint API endpoint path
    * @param params Request parameters
