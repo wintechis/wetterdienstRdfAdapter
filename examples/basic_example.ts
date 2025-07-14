@@ -8,7 +8,8 @@ const stations = await wetterdienstClient.getStations({
   network: "observation",
   parameters: WeatherParameters.SUNSHINE_DURATION_ANNUAL,
   periods: "recent",
-  coordinates: [49.019533, 12.097487],
+  latitude: 49.019533,
+  longitude: 12.097487,
   rank: 5,
 });
 

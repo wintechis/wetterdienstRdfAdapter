@@ -133,9 +133,8 @@ export class WetterdienstClient {
       all: params.all,
       station: params.station,
       name: params.name,
-      coordinates: params.coordinates
-        ? params.coordinates.join(",")
-        : undefined,
+      latitude: params.latitude,
+      longitude: params.longitude,
       rank: params.rank,
       distance: params.distance,
       bbox: params.bbox ? params.bbox.join(",") : undefined,

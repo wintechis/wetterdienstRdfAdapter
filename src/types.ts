@@ -19,7 +19,8 @@ export interface StationFilterParams {
   all?: boolean;
   station?: string | string[];
   name?: string;
-  coordinates?: [number, number];
+  latitude?: number;
+  longitude?: number;
   rank?: number;
   distance?: number;
   bbox?: [number, number, number, number];

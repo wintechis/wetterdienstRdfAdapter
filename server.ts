@@ -83,7 +83,8 @@ function determineResponseFormat(ctx: Context): {
  * - network (default: "observation")
  * - parameters (required)
  * - periods (default: "recent")
- * - coordinates (optional, format: "lat,lon")
+ * - latitude (optional)
+ * - longitude (optional)
  * - rank (optional, default: 5)
  * - format (optional, default: "json", can be "rdf")
  */
@@ -104,23 +105,21 @@ router.get("/stations", async (ctx) => {
     }
 
     // Check if location-based search is requested
-    let coords: [number, number] | undefined = undefined;
-    const coordinates = url.searchParams.get("coordinates");
+    let latNum, lonNum: number | undefined = undefined;
+    const latitude = url.searchParams.get("latitude");
+    const longitude = url.searchParams.get("longitude");
 
-    if (coordinates) {
-      const [latStr, lonStr] = coordinates.split(",");
-      const latNum = parseFloat(latStr);
-      const lonNum = parseFloat(lonStr);
+    if (latitude && longitude) {
+      latNum = parseFloat(latitude);
+      lonNum = parseFloat(longitude);
 
       if (isNaN(latNum) || isNaN(lonNum)) {
         ctx.response.status = 400;
         ctx.response.body = {
-          error: "Invalid coordinates format. Expected: lat,lon",
+          error: "Invalid coordinates format. Use latitude and longitude as numbers.",
         };
         return;
       }
-
-      coords = [latNum, lonNum];
     }
 
     // Optional rank parameter for location-based searches
@@ -133,8 +132,9 @@ router.get("/stations", async (ctx) => {
       network,
       parameters,
       periods,
-      coordinates: coords,
-      rank: coords ? rank : undefined,
+      latitude: latNum,
+      longitude: lonNum,
+      rank: (latNum && lonNum) ? rank : undefined,
     });
 
     // Return response in requested format

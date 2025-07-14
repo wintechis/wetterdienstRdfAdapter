@@ -50,7 +50,7 @@
     hydra:method "GET" ;
     hydra:expects [
         a hydra:IriTemplate ;
-        hydra:template "/stations{?provider,network,parameters,periods,coordinates,rank}" ;
+        hydra:template "/stations{?provider,network,parameters,periods,latitude,longitude,rank}" ;
         hydra:mapping [
             a hydra:IriTemplateMapping ;
             hydra:variable "provider" ;
@@ -73,8 +73,13 @@
             hydra:required "false"^^xsd:boolean ;
         ], [
             a hydra:IriTemplateMapping ;
-            hydra:variable "coordinates" ;
-            hydra:property schema:coordinates ;
+            hydra:variable "latitude" ;
+            hydra:property schema:latitude ;
+            hydra:required "false"^^xsd:boolean ;
+        ], [
+            a hydra:IriTemplateMapping ;
+            hydra:variable "longitude" ;
+            hydra:property schema:longitude ;
             hydra:required "false"^^xsd:boolean ;
         ], [
             a hydra:IriTemplateMapping ;
