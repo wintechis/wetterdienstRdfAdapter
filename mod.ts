@@ -4,7 +4,7 @@
  * A library for accessing the Wetterdienst API and converting results to RDF.
  */
 
-export { wetterdienstClient, WetterdienstClient } from "./src/client.ts";
+export { WetterdienstClient, wetterdienstClient } from "./src/client.ts";
 export { valuesToRDF } from "./src/values.ts";
 export { stationsToRDF } from "./src/stations.ts";
 export {
