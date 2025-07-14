@@ -1,6 +1,6 @@
 {
   "name": "@wintechis/wetterdienst-rdf-adapter",
-  "version": "0.0.41",
+  "version": "0.0.51",
   "license": "AGPL-3.0",
   "description": "A Deno application to convert wetterdienst responses to RDF format.",
   "exports": {
