@@ -27,11 +27,13 @@ export class WetterdienstClient {
    * @param options Configuration options
    * @returns A new WetterdienstClient instance with updated configuration
    */
-  configure(options: { baseUrl?: string; maxRetries?: number; timeout?: number }): WetterdienstClient {
+  configure(
+    options: { baseUrl?: string; maxRetries?: number; timeout?: number },
+  ): WetterdienstClient {
     return new WetterdienstClient(
       options.baseUrl ?? this.baseUrl,
       options.maxRetries ?? this.maxRetries,
-      options.timeout ?? this.timeout
+      options.timeout ?? this.timeout,
     );
   }
 
