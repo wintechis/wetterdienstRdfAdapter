@@ -1,9 +1,11 @@
 {
   "name": "@wintechis/wetterdienst-rdf-adapter",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "AGPL-3.0",
   "description": "A Deno application to convert wetterdienst responses to RDF format.",
-  "exports": "./mod.ts",
+  "exports": {
+    ".": "./mod.ts"
+  },
   "tasks": {
     "dev": "deno run --allow-net --allow-env --watch server.ts",
     "start": "deno run --allow-net --allow-env server.ts",
@@ -27,5 +29,29 @@
   "fmt": {
     "singleQuote": false,
     "proseWrap": "preserve"
+  },
+  "npmRegistry": {
+    "binary": false
+  },
+  "node": {
+    "target": "auto",
+    "include": [
+      "src/**/*.ts",
+      "mod.ts"
+    ]
+  },
+  "jsr": {
+    "npm": {
+      "keywords": ["wetterdienst", "rdf", "dwd", "weather", "semantic-web"],
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/wintechis/wetterdienstRdfAdapter.git"
+      },
+      "homepage": "https://github.com/wintechis/wetterdienstRdfAdapter"
+    }
+  },
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["deno.ns", "dom"]
   }
 }
