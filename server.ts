@@ -116,7 +116,8 @@ router.get("/stations", async (ctx) => {
       if (isNaN(latNum) || isNaN(lonNum)) {
         ctx.response.status = 400;
         ctx.response.body = {
-          error: "Invalid coordinates format. Use latitude and longitude as numbers.",
+          error:
+            "Invalid coordinates format. Use latitude and longitude as numbers.",
         };
         return;
       }
