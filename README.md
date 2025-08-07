@@ -28,17 +28,19 @@ The `text/turtle` format is used as the default when no specific format is reque
 
 #### Example Requests
 
+Get the nearest stations at coordinates `49.019533`, `12.097487`:
 ```console
 foo@bar:~$ curl -X GET -H "Accept: text/turtle" \
 "https://wetterdienst-rdf-adapter.deno.dev/stations?provider=dwd&network=observation&parameters=annual%2Fclimate_summary%2Fsunshine_duration&periods=recent&latitude=49.019533&longitude=12.097487&rank=1"
 ```
 
 To query the values for annual sunshine duration observed by a given station `04104` in the year 2024 you can use the following URL:
-
 ```console
 foo@bar:~$ curl -X GET -H "Accept: text/turtle" \
 "https://wetterdienst-rdf-adapter.deno.dev/values?provider=dwd&network=observation&parameters=annual%2Fclimate_summary%2Fsunshine_duration&periods=recent&station=04104&date=2024-01-01"
 ```
+
+An overview of all available parameters is available at [https://wetterdienst.readthedocs.io/en/latest/data/parameters.html](https://wetterdienst.readthedocs.io/en/latest/data/parameters.html)
 
 ### Using the Library
 
