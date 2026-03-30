@@ -3,6 +3,11 @@
  */
 
 /**
+ * Custom headers for HTTP requests
+ */
+export type RequestHeaders = Record<string, string>;
+
+/**
  * Base parameters required for all station requests
  */
 export interface RequestParams {

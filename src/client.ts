@@ -1,4 +1,5 @@
 import type {
+  RequestHeaders,
   RequestParams,
   StationFilterParams,
   StationsResponse,
@@ -11,15 +12,18 @@ export class WetterdienstClient {
   private baseUrl: string;
   private maxRetries: number;
   private timeout: number;
+  private headers: RequestHeaders;
 
   constructor(
     baseUrl = API_CONFIG.BASE_URL,
     maxRetries = 3,
     timeout = 10000,
+    headers: RequestHeaders = {},
   ) {
     this.baseUrl = baseUrl;
     this.maxRetries = maxRetries;
     this.timeout = timeout;
+    this.headers = headers;
   }
 
   /**
@@ -28,12 +32,18 @@ export class WetterdienstClient {
    * @returns A new WetterdienstClient instance with updated configuration
    */
   configure(
-    options: { baseUrl?: string; maxRetries?: number; timeout?: number },
+    options: {
+      baseUrl?: string;
+      maxRetries?: number;
+      timeout?: number;
+      headers?: RequestHeaders;
+    },
   ): WetterdienstClient {
     return new WetterdienstClient(
       options.baseUrl ?? this.baseUrl,
       options.maxRetries ?? this.maxRetries,
       options.timeout ?? this.timeout,
+      options.headers ?? this.headers,
     );
   }
 
@@ -59,6 +69,7 @@ export class WetterdienstClient {
 
         const response = await fetch(url.toString(), {
           signal: controller.signal,
+          headers: this.headers,
         });
 
         clearTimeout(timeoutId);
